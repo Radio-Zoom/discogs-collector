@@ -1,17 +1,21 @@
+#! python3
+
+import os
+import csv
 import track as t
+from retry import retry
+from fp.fp import FreeProxy
+from itertools import cycle
 import discogs_client as dc
 from discogs_client.exceptions import HTTPError
-from retry import retry
-from time import sleep
-import csv
-import os
 
 
 def main():
     # user input
     token = input("Paste your token: \n")
-    filename = input("Please enter the name of the csv file: \n") + ".csv"
-
+    filename = input("Please enter the name of the csv file: \n")
+    filename += ".csv" if not filename.endswith(".csv") else ""
+    
     # connect to discogs client with token
     client = dc.Client("DiscogsCollector", user_token=token)
 
@@ -39,11 +43,14 @@ def main():
         ]
         writer.writerow(header)
 
-        foo(release_ids, client, writer)
+        gen_and_write_track_data(release_ids, client, writer)
 
 
-@retry(HTTPError, delay=5, tries=-1)
-def foo(release_ids, client, writer):
+@retry(HTTPError, tries=-1)
+def gen_and_write_track_data(release_ids, client, writer):
+    proxy_list = get_proxies()
+    proxy_cycle = cycle(proxy_list)
+
     # releases
     for id in release_ids:
         release = client.release(id)
@@ -77,9 +84,7 @@ def foo(release_ids, client, writer):
 
             writer.writerow(t.Track.get_values(track))
 
-            # TODO sleep -> proxys
-            # sleep for bigger collections (mayhaps a little less than 0.5 sec)
-            sleep(0.5)
+            change_proxy(proxy_cycle)
 
 
 def logging(id, year, album, artist, label, genre, star_track, duration):
@@ -94,6 +99,19 @@ def logging(id, year, album, artist, label, genre, star_track, duration):
     print("duration: " + str(duration))
     print("------------------------------")
 
+@retry(tries=10, delay=1, jitter=1, max_delay=4)
+def get_proxies(number:int=5, anonym:bool=True, google:bool=False, https:bool=True, country_ids:list[str]=None) -> list:
+    proxies = []
+    for i in range(number):
+        proxies += [FreeProxy(rand=True,
+                            anonym=anonym,
+                            google=google,
+                            https=True,country_id=country_ids
+                            ).get()]
+    return proxies
+
+def change_proxy(proxy_cycle):
+    os.environ['HTTPS_PROXY'] = next(proxy_cycle)
 
 if __name__ == "__main__":
     main()
