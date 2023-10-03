@@ -4,11 +4,12 @@ from datetime import date
 class Track:
     def __init__(
         self,
-        externalid,
+        external_id,
         catno,
         year,
         album,
-        artist,
+        album_artist,
+        track_artist,
         position,
         label,
         genre,
@@ -19,7 +20,7 @@ class Track:
     ):
         # TODO sanatize
         self.id = ""
-        self.externalid = externalid
+        self.external_id = external_id
         self.catno = catno
         if year == 0:
             self.year = ""
@@ -28,7 +29,8 @@ class Track:
             self.year = str(year)
             self.decade = self.year[0:-1] + "0"
         self.album = album
-        self.artist = artist
+        self.album_artist = album_artist
+        self.track_artist = track_artist
         self.position = position
         self.label = label
         self.genre = genre
@@ -40,12 +42,13 @@ class Track:
         pass
 
     def logging(self):
-        print("externalid: " + self.externalid)
+        print("external_id: " + self.external_id)
         print("catalog no: " + self.catno)
         print("year: " + self.year)
         print("decade: " + self.decade)
         print("album: " + self.album)
-        print("artist: " + self.artist)
+        print("album_artist: " + self.album_artist)
+        print("track_artist: " + self.track_artist)
         print("position: " + self.position)
         print("label: " + self.label)
         print("genre: " + self.genre)
