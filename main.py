@@ -4,7 +4,6 @@ from time import sleep
 
 import discogs_client as dc
 from discogs_client.exceptions import HTTPError
-from retrying import retry
 
 import track as t
 
@@ -54,7 +53,7 @@ def write_release_data(release_ids, client, writer):
         for track in release.tracklist:
             duration = convert_duration(duration_raw=track.duration)
             position = track.position
-            track_artists = get_track_artists(track)
+            track_artists = get_track_artists(track, album_artists)
             track_object = t.Track(
                 str(release_id) + "_" + position,
                 catno,
@@ -83,16 +82,20 @@ def get_album_artists(release) -> str:
     )
 
 
-def get_track_artists(track) -> str:
+def get_track_artists(track, album_artist: str) -> str:
     return (
         " & ".join([artist.name for artist in track.artists])
         if len(track.artists) > 0
-        else ""
+        else album_artist
     )
 
 
 def get_genres(release) -> str:
     return "_".join(release.genres) if len(release.genres) > 0 else release.genres[0]
+
+
+def get_subgenres(release) -> str:
+    return "_".join(release.styles) if release.styles else ""
 
 
 def convert_duration(duration_raw: str) -> str:
@@ -101,10 +104,6 @@ def convert_duration(duration_raw: str) -> str:
     durations = duration_raw.split(":")
     sec = int(durations[0]) * 60 + int(durations[1])
     return str(sec) + ".000" if len(durations) == 2 else str(sec) + "." + durations[2]
-
-
-def get_subgenres(release) -> str:
-    return "_".join(release.styles) if release.styles else ""
 
 
 def get_format(release) -> str:
