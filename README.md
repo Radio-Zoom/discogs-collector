@@ -1,4 +1,5 @@
 # discogs-collector
+
 Uses Discogs-API to collect information from your collection on Discogs.
 
 ## Requirements
@@ -6,7 +7,7 @@ Uses Discogs-API to collect information from your collection on Discogs.
 - Python (we recommend the newest version)
 - Pip (package manager for python)
 
-## Set up a virtual environment [Optional]:
+## Set up a virtual environment [Optional]
 
 1. On Linux: install venv package with your package manager (e.g. apt or pacman)
 
@@ -54,7 +55,7 @@ Execute the main script
 python main.py
 ```
 
-or 
+or
 
 ```sh
 python3 main.py
@@ -62,24 +63,27 @@ python3 main.py
 
 or once `chmod +x main.py` and then `./main.py`
 
-- Input: 
-    - <a href="https://www.discogs.com/de/settings/developers">Discogs Token</a>
-    - Name of the CSV file
+- Input:
+  - [Discogs Token](https://www.discogs.com/de/settings/developers)
+  - Name of the CSV file
 
-- Output: 
-    - CSV file of all your tracks from your whole collection with following data (separated with semicolons)
+- Output:
+  - CSV file of all your tracks from your whole collection with following data (separated with semicolons)
+
+## Columns
 
 Name | Comment | Implementation status
 :-|:-:|:-:
-ID|Format: iscogs id_track positon|✔️
-Catalog No.|Label code|✔️
-Year||✔️
+ID|Format: Discogs id_track positon|✔️
+CatalogNo|Label code|✔️
+ReleaseYear||✔️
 Decade||✔️
 Album||✔️
-Artist||✔️
+AlbumArtist| " & " separated for multiple artists|✔️
+TrackArtist| " & " separated for multiple artists|✔️
 Label||✔️
 Genre||✔️
-Styles/Subgenres|underscore separated|✔️
+Subgenre|(Styles) Underscore separated|✔️
 Title||✔️
 Duration|Format: Seconds.Milliseconds|✔️
 Format|RPM, LP, ... (underscore separated)| ✔️
