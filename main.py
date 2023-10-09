@@ -4,7 +4,6 @@ from time import sleep
 
 import discogs_client as dc
 from discogs_client.exceptions import HTTPError
-
 from retrying import retry
 
 import track as t
@@ -35,7 +34,6 @@ def main():
         write_release_data(release_ids, client, writer)
 
 
-@retry(retry_on_exception=HTTPError, wait_fixed=5000, stop_max_attempt_number=5)
 def write_release_data(release_ids, client, writer):
     # iterate through all releases
     for release_id in release_ids:
@@ -45,36 +43,56 @@ def write_release_data(release_ids, client, writer):
         catno = release.labels[0].catno
         year = release.year
         album = release.title
-        artist = release.artists[0].name
+        album_artists = get_album_artists(release)
         label = release.labels[0].name
-        genre = release.genres[0]
-        subgenre = get_subgenre(release)
+        genre = get_genres(release)
+        subgenre = get_subgenres(release)
         format = get_format(release)
-
-        tracklist = release.tracklist
 
         # TODO refactoring
         # iterate through all tracks of the release
-        for star_track in tracklist:
-            duration = convert_duration(duration_raw=star_track.duration)
-            position = star_track.position
-            track = t.Track(
+        for track in release.tracklist:
+            duration = convert_duration(duration_raw=track.duration)
+            position = track.position
+            track_artists = get_track_artists(track)
+            track_object = t.Track(
                 str(release_id) + "_" + position,
                 catno,
                 year,
                 album,
-                artist,
+                album_artists,
+                track_artists,
                 position,
                 label,
                 genre,
                 subgenre,
-                star_track.title,
+                track.title,
                 duration,
                 format,
             )
-            t.Track.logging(track)
-            writer.writerow(t.Track.get_values(track))
+            t.Track.logging(track_object)
+            writer.writerow(t.Track.get_values(track_object))
             sleep(0.25)
+
+
+def get_album_artists(release) -> str:
+    return (
+        "_".join([artist.name for artist in release.artists])
+        if len(release.artists) > 0
+        else release.artists[0]
+    )
+
+
+def get_track_artists(track) -> str:
+    return (
+        "_".join([artist.name for artist in track.artists])
+        if len(track.artists) > 0
+        else ""
+    )
+
+
+def get_genres(release) -> str:
+    return "_".join(release.genres) if len(release.genres) > 0 else release.genres[0]
 
 
 def convert_duration(duration_raw: str) -> str:
@@ -85,13 +103,8 @@ def convert_duration(duration_raw: str) -> str:
     return str(sec) + ".000" if len(durations) == 2 else str(sec) + "." + durations[2]
 
 
-def get_subgenre(release) -> str:
-    subgenre = ""
-    if release.styles:
-        for style in release.styles:
-            subgenre += style + "_"
-    # delete last "_"
-    return subgenre[:-1]
+def get_subgenres(release) -> str:
+    return "_".join(release.styles) if release.styles else ""
 
 
 def get_format(release) -> str:
