@@ -77,7 +77,7 @@ def write_release_data(release_ids, client, writer):
 
 def get_album_artists(release) -> str:
     return (
-        "_".join([artist.name for artist in release.artists])
+        " & ".join([artist.name for artist in release.artists])
         if len(release.artists) > 0
         else release.artists[0]
     )
@@ -85,7 +85,7 @@ def get_album_artists(release) -> str:
 
 def get_track_artists(track) -> str:
     return (
-        "_".join([artist.name for artist in track.artists])
+        " & ".join([artist.name for artist in track.artists])
         if len(track.artists) > 0
         else ""
     )
