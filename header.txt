@@ -1,0 +1,15 @@
+ID
+ExternalID
+CatalogNo
+Year
+Decade
+Album
+Artist
+Position
+Label
+Genre
+Subgenre
+Title
+Duration
+Format
+Date
